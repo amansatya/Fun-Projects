@@ -69,120 +69,165 @@ export default function CreatePost({ onCreate }) {
     }
   };
 
+  const inputBase = {
+    background: "var(--color-parchment)",
+    color: "var(--color-ink)",
+    border: "1px solid var(--color-mist)",
+    fontFamily: "var(--font-body)",
+  };
+
+  const inputFocusStyle = `
+    w-full rounded-xl px-4 py-3 text-sm font-medium
+    placeholder:text-[var(--color-warm-gray)]/60
+    focus:outline-none focus:ring-2 focus:ring-[var(--color-amber)]/25
+    transition
+  `;
+
   return (
-    <div className="relative z-10 max-w-2xl mx-auto px-4 mb-14">
-      {toast && (
+      <div className="relative z-10 max-w-2xl mx-auto px-4 mb-14">
+        {toast && (
+            <div
+                className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium animate-fade-up`}
+                style={{
+                  background: toast.type === "error" ? "var(--color-rust)" : "var(--color-sage)",
+                  color: "#fff",
+                }}
+            >
+              {toast.msg}
+            </div>
+        )}
+
         <div
-          className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium animate-fade-up
-            ${toast.type === "error" ? "bg-rust text-white" : "bg-sage text-white"}`}
+            className="backdrop-blur-sm rounded-2xl p-6 shadow-sm"
+            style={{
+              background: "#ffffff",
+              border: "1px solid var(--color-mist)",
+              boxShadow: "0 2px 20px rgba(44, 35, 32, 0.08)",
+            }}
         >
-          {toast.msg}
-        </div>
-      )}
+          <h2 className="font-display text-2xl font-semibold mb-5" style={{ color: "var(--color-ink)" }}>
+            Write a Post
+          </h2>
 
-      <div className="bg-white/80 backdrop-blur-sm border border-mist rounded-2xl p-6 shadow-sm">
-        <h2 className="font-display text-2xl font-semibold text-ink mb-5">Write a Post</h2>
-
-        {/* Title input */}
-        <div className="mb-3">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => { setTitle(e.target.value); setErrors((p) => ({ ...p, title: "" })); }}
-            placeholder="Post title *"
-            maxLength={100}
-            className={`w-full bg-parchment border rounded-xl px-4 py-3 text-ink text-sm font-medium
-              placeholder:text-warm-gray/60 focus:outline-none focus:ring-2 focus:ring-amber/40
-              transition
-              ${errors.title ? "border-rust/60 focus:border-rust" : "border-mist focus:border-amber"}`}
-          />
-          <div className="flex justify-between mt-1 px-1">
-            {errors.title
-              ? <p className="text-xs text-rust">{errors.title}</p>
-              : <span />
-            }
-            <p className="text-xs text-warm-gray/50">{title.length}/100</p>
+          {/* Title input */}
+          <div className="mb-3">
+            <input
+                type="text"
+                value={title}
+                onChange={(e) => { setTitle(e.target.value); setErrors((p) => ({ ...p, title: "" })); }}
+                placeholder="Post title *"
+                maxLength={100}
+                className={inputFocusStyle}
+                style={{
+                  ...inputBase,
+                  borderColor: errors.title ? "var(--color-rust)" : "var(--color-mist)",
+                }}
+            />
+            <div className="flex justify-between mt-1 px-1">
+              {errors.title
+                  ? <p className="text-xs" style={{ color: "var(--color-rust)" }}>{errors.title}</p>
+                  : <span />
+              }
+              <p className="text-xs" style={{ color: "var(--color-warm-gray)", opacity: 0.7 }}>{title.length}/100</p>
+            </div>
           </div>
-        </div>
 
-        {/* Body textarea */}
-        <div className="mb-3">
+          {/* Body textarea */}
+          <div className="mb-3">
           <textarea
-            value={text}
-            onChange={(e) => { setText(e.target.value); setErrors((p) => ({ ...p, text: "" })); }}
-            placeholder="What's on your mind today? *"
-            rows={4}
-            className={`w-full bg-parchment border rounded-xl px-4 py-3 text-ink text-sm
-              placeholder:text-warm-gray/60 focus:outline-none focus:ring-2 focus:ring-amber/40
-              resize-none transition
-              ${errors.text ? "border-rust/60 focus:border-rust" : "border-mist focus:border-amber"}`}
+              value={text}
+              onChange={(e) => { setText(e.target.value); setErrors((p) => ({ ...p, text: "" })); }}
+              placeholder="What's on your mind today? *"
+              rows={4}
+              className={`${inputFocusStyle} resize-none`}
+              style={{
+                ...inputBase,
+                borderColor: errors.text ? "var(--color-rust)" : "var(--color-mist)",
+              }}
           />
-          {errors.text && <p className="text-xs text-rust mt-1 px-1">{errors.text}</p>}
-        </div>
+            {errors.text && (
+                <p className="text-xs mt-1 px-1" style={{ color: "var(--color-rust)" }}>{errors.text}</p>
+            )}
+          </div>
 
-        {/* Drop Zone — optional */}
-        <div
-          className={`drop-zone border-2 border-dashed rounded-xl overflow-hidden cursor-pointer
-            ${dragging ? "dragging border-amber bg-amber/5" : "border-mist hover:border-amber/50"}`}
-          onClick={() => inputRef.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={handleDrop}
-        >
-          {preview ? (
-            <div className="relative group">
-              <img src={preview} alt="Preview" className="w-full max-h-52 object-cover" />
-              <div className="absolute inset-0 bg-ink/40 opacity-0 group-hover:opacity-100
-                transition-opacity flex items-center justify-center gap-3">
-                <span className="text-white text-sm font-medium bg-ink/60 px-3 py-1 rounded-full">
+          {/* Drop Zone */}
+          <div
+              className={`drop-zone border-2 border-dashed rounded-xl overflow-hidden cursor-pointer ${dragging ? "dragging" : ""}`}
+              style={{
+                borderColor: dragging ? "var(--color-amber)" : "var(--color-mist)",
+                background: dragging ? "rgba(184, 92, 56, 0.03)" : "var(--color-parchment)",
+              }}
+              onClick={() => inputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={handleDrop}
+          >
+            {preview ? (
+                <div className="relative group">
+                  <img src={preview} alt="Preview" className="w-full max-h-52 object-cover" />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3"
+                       style={{ background: "rgba(250, 247, 242, 0.75)" }}>
+                <span className="text-sm font-medium px-3 py-1 rounded-full"
+                      style={{ background: "rgba(44,35,32,0.12)", color: "var(--color-ink)" }}>
                   Click to change
                 </span>
-                <button
-                  onClick={removeImage}
-                  className="text-white text-sm font-medium bg-rust/80 hover:bg-rust px-3 py-1 rounded-full transition"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="py-6 flex flex-col items-center gap-2 text-warm-gray/70 select-none">
-              <svg className="w-7 h-7 opacity-50" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5M16.5 3.75h3a.75.75 0 01.75.75v3" />
-              </svg>
-              <p className="text-sm">
-                <span className="text-amber-700 font-medium">Click to upload</span> or drag &amp; drop
-              </p>
-              <p className="text-xs text-warm-gray/50">Optional · PNG, JPG, WEBP up to 10 MB</p>
-            </div>
-          )}
-        </div>
-        <input ref={inputRef} type="file" accept="image/*" className="hidden"
-          onChange={(e) => handleFile(e.target.files[0])} />
+                    <button
+                        onClick={removeImage}
+                        className="cursor-pointer text-white text-sm font-medium px-3 py-1 rounded-full transition"
+                        style={{ background: "var(--color-rust)" }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+            ) : (
+                <div className="py-6 flex flex-col items-center gap-2 select-none"
+                     style={{ color: "var(--color-warm-gray)" }}>
+                  <svg className="w-7 h-7 opacity-40" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                          d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5M16.5 3.75h3a.75.75 0 01.75.75v3" />
+                  </svg>
+                  <p className="text-sm">
+                    <span className="font-medium" style={{ color: "var(--color-amber)" }}>Click to upload</span>
+                    {" "}or drag &amp; drop
+                  </p>
+                  <p className="text-xs opacity-60">
+                    Optional · PNG, JPG, WEBP up to 10 MB
+                  </p>
+                </div>
+            )}
+          </div>
+          <input ref={inputRef} type="file" accept="image/*" className="hidden"
+                 onChange={(e) => handleFile(e.target.files[0])} />
 
-        <button
-          onClick={handleSubmit}
-          disabled={uploading}
-          className="cursor-pointer mt-4 w-full bg-ink text-parchment font-medium text-sm rounded-xl py-3 px-6
-            hover:bg-charcoal active:scale-[0.98] transition-all duration-150
+          <button
+              onClick={handleSubmit}
+              disabled={uploading}
+              className="cursor-pointer mt-4 w-full font-medium text-sm rounded-xl py-3 px-6
+            active:scale-[0.98] transition-all duration-150
             disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {uploading ? (
-            <>
-              <span className="w-4 h-4 border-2 border-parchment/30 border-t-parchment rounded-full animate-spin-slow" />
-              Publishing…
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Publish Post
-            </>
-          )}
-        </button>
+              style={{
+                background: uploading ? "var(--color-mist)" : "var(--color-amber)",
+                color: uploading ? "var(--color-charcoal)" : "#fff",
+                boxShadow: uploading ? "none" : "0 2px 16px rgba(184, 92, 56, 0.3)",
+              }}
+          >
+            {uploading ? (
+                <>
+              <span className="w-4 h-4 border-2 rounded-full animate-spin-slow"
+                    style={{ borderColor: "rgba(90,74,66,0.3)", borderTopColor: "var(--color-charcoal)" }} />
+                  Publishing…
+                </>
+            ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                  Publish Post
+                </>
+            )}
+          </button>
+        </div>
       </div>
-    </div>
   );
 }
